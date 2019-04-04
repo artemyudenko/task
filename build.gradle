@@ -14,9 +14,6 @@ repositories {
     mavenCentral()
 }
 
-application {
-    mainClassName = 'Aplication'
-}
 
 dependencies {
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'
@@ -24,4 +21,9 @@ dependencies {
     compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.9.8'
     compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
     runtimeOnly 'org.hsqldb:hsqldb'
+}
+
+run {
+    standardInput = System.in
+    main = 'Application'
 }
