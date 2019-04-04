@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 public class Solution {
@@ -29,6 +30,7 @@ public class Solution {
         objectMapper.registerModule(new JavaTimeModule());
         connector.openDbConnection();
         Stream<String> lines = Files.lines(Paths.get(file.getAbsolutePath()));
+        long startTime = System.currentTimeMillis();
 
         lines.forEach(line -> {
             try {
@@ -59,8 +61,8 @@ public class Solution {
                 LOGGER.error("Exception occured {}", e.getLocalizedMessage());
             }
         });
-
-        LOGGER.info("File is successfully parsed. Inserting to DB.");
+        long elapsedTime = System.currentTimeMillis() - startTime;
+        LOGGER.info("File is successfully parsed. Inserting to DB. Elapsed time : {} seconds", TimeUnit.MILLISECONDS.toSeconds(elapsedTime));
         connector.insert(values);
         connector.close();
     }
