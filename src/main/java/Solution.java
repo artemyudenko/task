@@ -2,6 +2,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import db.Connector;
 import model.Event;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,22 +16,28 @@ import java.util.stream.Stream;
 
 public class Solution {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Solution.class);
+
     private final Connector connector = new Connector();
     private ObjectMapper objectMapper = new ObjectMapper();
 
     private Map<String, Event> values = new HashMap<>();
 
-
     public void run(File file) throws IOException, SQLException, ClassNotFoundException {
+        LOGGER.debug("Starting reading the file {}", file.getName());
+
         objectMapper.registerModule(new JavaTimeModule());
         connector.openDbConnection();
         Stream<String> lines = Files.lines(Paths.get(file.getAbsolutePath()));
+
         lines.forEach(line -> {
             try {
                 Event event = objectMapper.readValue(line, Event.class);
                 Event loggedEvent = values.get(event.getId());
 
                 if (loggedEvent != null) {
+                    LOGGER.debug("Event {} is compared with event {}", event.getId(), loggedEvent.getId());
+
                     long alertValue;
                     if (loggedEvent.getState().equals("STARTED")) {
                         alertValue = event.getTimestamp() - loggedEvent.getTimestamp();
@@ -48,10 +56,12 @@ public class Solution {
 
 
             } catch (IOException e) {
-
+                LOGGER.error("Exception occured {}", e.getLocalizedMessage());
             }
         });
 
-        values.forEach((s, event) -> System.out.println(event.getId() + " " + event.getState() + " " + event.isAlert()));
+        LOGGER.info("File is successfully parsed. Inserting to DB.");
+        connector.insert(values);
+        connector.close();
     }
 }

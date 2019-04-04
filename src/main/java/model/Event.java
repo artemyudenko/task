@@ -1,7 +1,5 @@
 package model;
 
-import java.time.LocalDate;
-
 public class Event {
     private String id;
     private String state;
